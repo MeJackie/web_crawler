@@ -70,3 +70,18 @@ func (ce *myCrawlerError) genFullErrMsg() {
 	ce.fullErrMsg = fmt.Sprintf("%s", buffer.String())
 	return
 }
+
+type IllegalParameterError struct {
+	msg string
+}
+
+func NewIllegalParameterError(errMsg string) IllegalParameterError {
+	return IllegalParameterError{
+		msg: fmt.Sprint("illegal parameter : %s",
+			strings.TrimSpace(errMsg)),
+	}
+}
+
+func (ipe IllegalParameterError) Error() string {
+	return ipe.msg
+}
