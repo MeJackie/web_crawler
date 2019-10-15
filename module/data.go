@@ -58,12 +58,12 @@ func NewRespone(httpResp *http.Response, depth uint32) *Response  {
 }
 
 // 获取响应
-func (resp Response) HTTPResp() *http.Response  {
+func (resp *Response) HTTPResp() *http.Response  {
 	return resp.httpResp
 }
 
 // 获取响应深度
-func (resp Response) Depth() uint32  {
+func (resp *Response) Depth() uint32  {
 	return resp.depth
 }
 
