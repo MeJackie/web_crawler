@@ -41,9 +41,65 @@ type DataArgs struct {
 	ErrorMaxBufferNumber uint32 `json:"error_max_buffer_number"`
 }
 
+func (args *DataArgs) Check() error  {
+	if args.ReqBufferCap == 0 {
+		return genError("zero request buffer capacity")
+	}
+	if args.ReqMaxBufferNumber == 0 {
+		return genError("zero max request buffer number")
+	}
+	if args.RespBufferCap == 0 {
+		return genError("zero response buffer capacity")
+	}
+	if args.RespMaxBufferNumber == 0 {
+		return genError("zero max response buffer number")
+	}
+	if args.ItemBufferCap == 0 {
+		return genError("zero item buffer capacity")
+	}
+	if args.ItemMaxBufferNumber == 0 {
+		return genError("zero max item buffer number")
+	}
+	if args.ErrorBufferCap == 0 {
+		return genError("zero error buffer capacity")
+	}
+	if args.ErrorMaxBufferNumber == 0 {
+		return genError("zero max error buffer number")
+	}
+	return nil
+}
+
 // 提供组件实例列表
 type ModuleArgs struct {
 	Downloaders []module.Downloader
-	Analyzer []module.Analyzer
-	Pipeline []module.Pipeline
+	Analyzers []module.Analyzer
+	Pipelines []module.Pipeline
+}
+
+// ModuleArgsSummary 代表组件相关的参数容器的摘要类型。
+type ModuleArgsSummary struct {
+	DownloaderListSize int `json:"downloader_list_size"`
+	AnalyzerListSize   int `json:"analyzer_list_size"`
+	PipelineListSize   int `json:"pipeline_list_size"`
+}
+
+func (args *ModuleArgs) Check() error  {
+	if len(args.Downloaders) == 0 {
+		return genError("empty downloader list")
+	}
+	if len(args.Analyzers) == 0 {
+		return genError("empty analyzer list")
+	}
+	if len(args.Pipelines) == 0 {
+		return genError("empty pipeline list")
+	}
+	return nil
+}
+
+func (args *ModuleArgs) Summary() ModuleArgsSummary {
+	return ModuleArgsSummary{
+		DownloaderListSize: len(args.Downloaders),
+		AnalyzerListSize:   len(args.Analyzers),
+		PipelineListSize:   len(args.Pipelines),
+	}
 }

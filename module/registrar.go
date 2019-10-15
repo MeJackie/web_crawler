@@ -7,7 +7,7 @@ import (
 )
 
 // 组件注册器接口
-type registrar interface {
+type Registrar interface {
 	// 注册组件实例
 	Register(module Module) (bool, error)
 	// 注销组件实例
@@ -28,6 +28,12 @@ type myRegistrar struct {
 	moduleTypeMap map[Type]map[MID]Module
 	// 组件注册专用读写锁
 	rwlock sync.RWMutex
+}
+
+func NewRegistrar() Registrar {
+	return &myRegistrar{
+		moduleTypeMap: map[Type]map[MID]Module{},
+	}
 }
 
 func (registrar *myRegistrar) Register(module Module) (bool, error) {
