@@ -14,7 +14,7 @@ const (
 	// 下载器错误
 	ERROR_TYPE_DOWNLOADER ErrorType = "downloader error"
 	// 分析器错误
-	ERROR_TYPE_ANALYER ErrorType = "analyzer error"
+	ERROR_TYPE_ANALYZER ErrorType = "analyzer error"
 	// 条目处理管道错误
 	ERROR_TYPE_PIPELINE ErrorType = "pipeline error"
 	// 调度器错误

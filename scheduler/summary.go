@@ -2,7 +2,10 @@ package scheduler
 
 import (
 	"encoding/json"
+	"sort"
+
 	"web_crawler/module"
+	"web_crawler/toolkit/buffer"
 )
 
 // 调度器摘要的接口类型
@@ -51,7 +54,7 @@ type mySchedSummary struct {
 	sched *myScheduler
 }
 
-func NewSchedSummary(
+func newSchedSummary(
 	requestArgs RequestArgs,
 	dataArgs DataArgs,
 	moduleArgs ModuleArgs,
@@ -76,20 +79,51 @@ func (ss *mySchedSummary) Struct() SummaryStruct {
 		DataArgs:        ss.dataArgs,
 		ModuleArgs:      ss.moduleArgs.Summary(),
 		Status:          GetStatusDescription(ss.sched.status),
-		Downloaders:     get,
-		Analyzers:       nil,
-		Pipelines:       nil,
-		ReqBufferPool:   BufferPoolSummaryStruct{},
-		RespBufferPool:  BufferPoolSummaryStruct{},
-		ItemBufferPool:  BufferPoolSummaryStruct{},
-		ErrorBufferPool: BufferPoolSummaryStruct{},
-		NumURL:          0,
+		Downloaders:     getModulesSummaries(registrar, module.TYPE_DOWNLOADER),
+		Analyzers:       getModulesSummaries(registrar, module.TYPE_ANALYZER),
+		Pipelines:       getModulesSummaries(registrar, module.TYPE_PIPELINE),
+		ReqBufferPool:   getBufferPoolSummary(ss.sched.reqBufferPool),
+		RespBufferPool:  getBufferPoolSummary(ss.sched.respBufferPool),
+		ItemBufferPool:  getBufferPoolSummary(ss.sched.itemBufferPool),
+		ErrorBufferPool: getBufferPoolSummary(ss.sched.errorBufferPool),
+		NumURL:          ss.sched.urlMap.Len(),
 	}
 }
+
 // 获取摘要信息的字符串形式
 func (ss *mySchedSummary) String() string {
 	b, err := json.MarshalIndent(ss.Struct(), "", "    ")
 	if err != nil {
-		logger.Errorf("An error", err)
+		logger.Errorf("An error occurs when generating scheduler summary: %s\n", err)
+		return ""
 	}
+	return string(b)
+}
+
+// 生成和返回某个数据缓存池的摘要信息
+func getBufferPoolSummary(bufferPool buffer.Pool)  BufferPoolSummaryStruct {
+	return BufferPoolSummaryStruct{
+		BufferCap:       bufferPool.BufferCap(),
+		MaxBufferNumber: bufferPool.MaxBufferNumber(),
+		BufferNumber:    bufferPool.BufferNumber(),
+		Total:           bufferPool.Total(),
+	}
+}
+
+// 获取已注册的某类组件的摘要
+func getModulesSummaries(registrar module.Registrar, mType module.Type) []module.SummaryStruct {
+	moduleMap, _ := registrar.GetAllByType(mType)
+	summaries := []module.SummaryStruct{}
+	for _, module := range moduleMap {
+		summaries = append(summaries, module.Summary())
+	}
+
+	if len(summaries) > 1 {
+		sort.Slice(summaries,
+			func(i, j int) bool {
+				return summaries[i].ID < summaries[j].ID
+			})
+	}
+
+	return summaries
 }
